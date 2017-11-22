@@ -1,0 +1,8 @@
+[package]
+name = "ndarray-npy"
+version = "0.1.0"
+authors = ["Norbert Pozar <bertapozar@gmail.com>"]
+
+[dependencies]
+byteorder = "1"
+ndarray = "0.10"
