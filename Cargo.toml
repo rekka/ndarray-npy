@@ -6,3 +6,6 @@ authors = ["Norbert Pozar <bertapozar@gmail.com>"]
 [dependencies]
 byteorder = "1"
 ndarray = "0.10"
+
+[dev-dependencies]
+tempdir = "0.3"

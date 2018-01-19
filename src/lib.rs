@@ -30,6 +30,7 @@ use ndarray::prelude::*;
 use ndarray::Data;
 
 static MAGIC_VALUE: &[u8] = b"\x93NUMPY";
+/// npy format Version 1.0
 static NPY_VERSION: &[u8] = b"\x01\x00";
 
 /// Types that can be serialized using this crate.
@@ -102,23 +103,30 @@ where
     D: Dimension,
     A: DType<NativeEndian> + Copy,
 {
-    w.write(MAGIC_VALUE)?;
-    w.write(NPY_VERSION)?;
     let header = get_header::<A, NativeEndian>(array.shape());
-    let header_len = header.len();
-    let align = (16 - (MAGIC_VALUE.len() + 4 + header_len) % 16) % 16;
-    let header_len = header_len + align;
+    let padding = (16 - (MAGIC_VALUE.len() + 4 + header.len()) % 16) % 16;
+    let header_len = header.len() + padding;
+    // the following value must be divisible by 16
+    assert_eq!(
+        (MAGIC_VALUE.len() + 4 + header_len) % 16,
+        0,
+        "Invalid alignment of the npy header"
+    );
     assert!(
         header_len <= u16::max_value() as usize,
         "Length of the npy header overflowed."
     );
+
+    w.write(MAGIC_VALUE)?;
+    w.write(NPY_VERSION)?;
     w.write_u16::<LittleEndian>(header_len as u16)?;
     w.write(header.as_bytes())?;
-
-    for _ in 0..align {
+    // padding
+    for _ in 0..padding {
         w.write_u8(b' ')?;
     }
 
+    // actual data
     for x in array.iter() {
         x.write_bytes(w)?;
     }
