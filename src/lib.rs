@@ -4,20 +4,21 @@
 //!
 //! Files produced this way can be loaded with `numpy.load`.
 //!
-//! ```
+//! # Simple example
+//!
+//! ```rust,no_run
 //! extern crate ndarray;
 //! extern crate ndarray_npy;
 //!
 //! use ndarray::prelude::*;
-//! use std::io;
+//! use std::fs::File;
 //!
 //! fn main() {
 //!     let arr: Array2<f64> = Array2::zeros((3, 4));
 //!
-//!     let stdout = io::stdout();
-//!     let mut handle = stdout.lock();
+//!     let mut file = File::create("test.npy").unwrap();
 //!
-//!     ndarray_npy::write(&mut handle, &arr).unwrap();
+//!     ndarray_npy::write(&mut file, &arr).unwrap();
 //! }
 //! ```
 //!
