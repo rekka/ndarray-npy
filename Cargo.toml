@@ -2,10 +2,11 @@
 name = "ndarray-npy"
 version = "0.1.0"
 authors = ["Norbert Pozar <bertapozar@gmail.com>"]
+license = "MIT"
 
 [dependencies]
 byteorder = "1"
-ndarray = "0.10"
+ndarray = "0.11"
 
 [dev-dependencies]
 tempdir = "0.3"

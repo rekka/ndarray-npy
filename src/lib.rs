@@ -2,7 +2,8 @@
 //! [NumPy](http://www.numpy.org/)'s [`.npy`
 //! format](https://docs.scipy.org/doc/numpy/neps/npy-format.html).
 //!
-//! Files produced this way can be loaded with `numpy.load`.
+//! Files produced this way can be loaded with
+//! [`numpy.load`](https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.load.html).
 //!
 //! # Simple example
 //!
