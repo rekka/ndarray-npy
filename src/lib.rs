@@ -24,13 +24,13 @@
 extern crate byteorder;
 extern crate ndarray;
 
-use byteorder::{BigEndian, LittleEndian, NativeEndian, WriteBytesExt, ByteOrder};
+use byteorder::{BigEndian, ByteOrder, LittleEndian, NativeEndian, WriteBytesExt};
 use std::io;
 use ndarray::prelude::*;
 use ndarray::Data;
 
-static MAGIC_VALUE : &[u8] = b"\x93NUMPY";
-static NPY_VERSION : &[u8] = b"\x01\x00";
+static MAGIC_VALUE: &[u8] = b"\x93NUMPY";
+static NPY_VERSION: &[u8] = b"\x01\x00";
 
 /// Types that can be serialized using this crate.
 pub trait DType<B> {
@@ -72,41 +72,54 @@ impl NumpyEndian for BigEndian {
     }
 }
 
-fn get_header<A, B>(shape: &[usize])-> String
-    where A: DType<B>, B: NumpyEndian {
-        use std::fmt::Write;
-        let mut shape_str = String::new();
-        for (i, s) in shape.iter().enumerate() {
-            if i > 0 {
-                shape_str.push_str(",");
-            }
-            write!(&mut shape_str, "{}", s).unwrap();
+fn get_header<A, B>(shape: &[usize]) -> String
+where
+    A: DType<B>,
+    B: NumpyEndian,
+{
+    use std::fmt::Write;
+    let mut shape_str = String::new();
+    for (i, s) in shape.iter().enumerate() {
+        if i > 0 {
+            shape_str.push_str(",");
         }
-    format!("{{'descr': '{endian}{dtype}','fortran_order': False,'shape': ({shape})}}\n",
+        write!(&mut shape_str, "{}", s).unwrap();
+    }
+    format!(
+        "{{'descr': '{endian}{dtype}','fortran_order': False,'shape': ({shape})}}\n",
         endian = B::endian_symbol(),
         dtype = A::dtype(),
         shape = shape_str
-        )
+    )
 }
 
-/// Write an ndarray to a writer in numpy format.
+/// Write an ndarray to a writer in the numpy format.
 ///
-/// Can be saved with extension `npy` and loaded using `numpy.load`.
+/// Can be saved with file extension `npy` and loaded using `numpy.load`.
 pub fn write<A, S, D>(w: &mut io::Write, array: &ArrayBase<S, D>) -> io::Result<()>
-where S: Data<Elem = A>, D: Dimension, A: DType<NativeEndian> + Copy {
+where
+    S: Data<Elem = A>,
+    D: Dimension,
+    A: DType<NativeEndian> + Copy,
+{
     w.write(MAGIC_VALUE)?;
     w.write(NPY_VERSION)?;
     let header = get_header::<A, NativeEndian>(array.shape());
     let header_len = header.len();
     let align = (16 - (MAGIC_VALUE.len() + 4 + header_len) % 16) % 16;
-    w.write_u16::<LittleEndian>((header_len + align) as u16)?;
+    let header_len = header_len + align;
+    assert!(
+        header_len <= u16::max_value() as usize,
+        "Length of the npy header overflowed."
+    );
+    w.write_u16::<LittleEndian>(header_len as u16)?;
     w.write(header.as_bytes())?;
 
     for _ in 0..align {
         w.write_u8(b' ')?;
     }
 
-    for x in array.iter().cloned() {
+    for x in array.iter() {
         x.write_bytes(w)?;
     }
 
@@ -114,9 +127,9 @@ where S: Data<Elem = A>, D: Dimension, A: DType<NativeEndian> + Copy {
 }
 
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-    }
-}
+// #[cfg(test)]
+// mod tests {
+//     #[test]
+//     fn it_works() {
+//     }
+// }
