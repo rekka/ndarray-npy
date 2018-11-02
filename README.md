@@ -1,3 +1,5 @@
+# Deprecated! Use for example crate [ndarray-npy](https://crates.io/crates/ndarray-npy) for a much more complete implementation.
+
 A simple serialization of ndarray arrays of simple types (`f32`, `f64`) into
 [NumPy](http://www.numpy.org/)'s [`.npy`
 format](https://docs.scipy.org/doc/numpy/neps/npy-format.html).
